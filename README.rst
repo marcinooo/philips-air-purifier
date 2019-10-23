@@ -4,7 +4,10 @@ Philips Air Purifier Controller
 
 :Author: marcinooo
 :Tags: philips air purifier, python, client, api
-:Abstract: A simple client to control the Philips AC2889 air purifier.
+
+:abstract: 
+
+   A simple client to control the Philips AC2889 air purifier.
 
 .. contents ::
 
