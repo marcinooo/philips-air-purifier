@@ -68,6 +68,7 @@ List of all allowed parameters you can find in dictionary:
 
 
 .. warning::
+   
    Some parameters must be set together:
 
    - setting speed in manual mode: ``philips_air_purifier.set(mode='M', om='2')``
