@@ -30,7 +30,7 @@ Installation
 
 Install the package with pip:
 
-`pip install git+https://github.com/marcinooo/philips-air-purifier.git`
+``$ pip install git+https://github.com/marcinooo/philips-air-purifier.git``
 
 |
 
