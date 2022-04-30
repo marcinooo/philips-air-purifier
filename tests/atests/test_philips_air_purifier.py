@@ -1,11 +1,6 @@
-import os
-import sys
 import unittest
 import time
 import logging
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(current_dir)), 'src'))
 
 from philips_air_purifier import PhilipsAirPurifier
 from philips_air_purifier import ALLOWED_PARAMETERS_TO_SET

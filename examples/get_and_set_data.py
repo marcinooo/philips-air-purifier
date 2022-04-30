@@ -1,9 +1,3 @@
-import os
-import sys
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(os.path.dirname(current_dir), 'src'))
-
 from philips_air_purifier import PhilipsAirPurifier
 
 

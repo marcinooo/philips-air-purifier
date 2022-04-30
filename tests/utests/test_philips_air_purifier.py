@@ -1,12 +1,7 @@
-import os
-import sys
 import unittest
 import json
 from unittest.mock import patch, Mock
 from ddt import ddt, data, unpack
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(current_dir)), 'src'))
 
 from philips_air_purifier import PhilipsAirPurifier
 from philips_air_purifier._utils import filter_requested_data
@@ -19,6 +14,7 @@ class TestAirPurifier(unittest.TestCase):
     
     def setUp(self):
         self.philips_air_purifier = PhilipsAirPurifier(host='192.168.1.21')
+        self.philips_air_purifier.connected = True
         self.session_key = b'\x9a!\xeaOa\xbf3\xe9\x01\xa8\x1fS]\x0b\xd6\xad'
 
     @data(
@@ -36,10 +32,12 @@ class TestAirPurifier(unittest.TestCase):
     @patch('requests.put')
     def test_philips_air_purifier_connect_procedure(self, put_requests_data, bits, session_key, 
                                                     mock_put, mock_getrandbits):
+        self.philips_air_purifier.connected = False
         mock_put.return_value = self._mock_response(content=put_requests_data)
         mock_getrandbits.return_value = bits
         self.philips_air_purifier.connect()
         self.assertEqual(self.philips_air_purifier.session_key, session_key)
+        self.assertEqual(self.philips_air_purifier.connected, True)
 
     @data(
         (
@@ -142,7 +140,6 @@ class TestFilterRequestedData(unittest.TestCase):
     @data(
         {'pwr': '0'},
         {'pwr': '1'},
-        {'om': '0'},
         {'om': '1'},
         {'om': '2'},
         {'om': '3'},
@@ -168,7 +165,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'pwr': 1},
     )
     def test_invalid_pwr_parameter_values(self, parameters):
-        error_message = "Value of parameter is not allowed.\n{}".format(ALLOWED_PARAMETERS_TO_SET['pwr']['help'])
+        error_message = "Value '{}' is not allowed.\n{}".format(
+            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['pwr']['help']
+        )
         self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
 
     @data(
@@ -177,7 +176,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'om': 1},
     )
     def test_invalid_om_parameter_values(self, parameters):
-        error_message = "Value of parameter is not allowed.\n{}".format(ALLOWED_PARAMETERS_TO_SET['om']['help'])
+        error_message = "Value '{}' is not allowed.\n{}".format(
+            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['om']['help']
+        )
         self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
 
     @data(
@@ -187,7 +188,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'aqil': 120},
     )
     def test_invalid_aqil_parameter_values(self, parameters):
-        error_message = "Value of parameter is not allowed.\n{}".format(ALLOWED_PARAMETERS_TO_SET['aqil']['help'])
+        error_message = "Value '{}' is not allowed.\n{}".format(
+            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['aqil']['help']
+        )
         self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
 
     @data(
@@ -196,7 +199,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'uil': 'D'},
     )
     def test_invalid_uil_parameter_values(self, parameters):
-        error_message = "Value of parameter is not allowed.\n{}".format(ALLOWED_PARAMETERS_TO_SET['uil']['help'])
+        error_message = "Value '{}' is not allowed.\n{}".format(
+            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['uil']['help']
+        )
         self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
     
     @data(
@@ -205,7 +210,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'ddp': '3'},
     )
     def test_invalid_ddp_parameter_values(self, parameters):
-        error_message = "Value of parameter is not allowed.\n{}".format(ALLOWED_PARAMETERS_TO_SET['ddp']['help'])
+        error_message = "Value '{}' is not allowed.\n{}".format(
+            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['ddp']['help']
+        )
         self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
 
     @data(
@@ -215,5 +222,7 @@ class TestFilterRequestedData(unittest.TestCase):
         {'mode': -1},
     )
     def test_invalid_aqil_parameter_values(self, parameters):
-        error_message = "Value of parameter is not allowed.\n{}".format(ALLOWED_PARAMETERS_TO_SET['mode']['help'])
+        error_message = "Value '{}' is not allowed.\n{}".format(
+            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['mode']['help']
+        )
         self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
