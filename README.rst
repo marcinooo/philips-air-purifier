@@ -30,7 +30,7 @@ Installation
 
 Install the package with pip:
 
-`pip install git+https://github.com/martinwac/air_purifier.git`
+`pip install git+https://github.com/marcinooo/philips-air-purifier.git`
 
 |
 
@@ -81,4 +81,5 @@ License
 
 license_ (MIT)
 
-.. _license: https://github.com/martinwac/air_purifier/blob/master/LICENSE.txt
+.. _license: https://github.com/marcinooo/philips-air-purifier/blob/master/LICENSE.txt
+
