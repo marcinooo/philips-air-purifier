@@ -65,7 +65,7 @@ ALLOWED_PARAMETERS_TO_SET = {
     },
     'om': {
         'values': ['1', '2', '3', 's'],
-        'help': "'om' parameter controls speed. Allowed values: '0', '1', '2', '3', 's'.",
+        'help': "'om' parameter controls speed. Allowed values: '1', '2', '3', 's'.",
     },
     'aqil': {
         'values': list(range(1, 101)),
