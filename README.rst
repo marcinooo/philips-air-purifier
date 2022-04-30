@@ -82,3 +82,4 @@ License
 license_ (MIT)
 
 .. _license: https://github.com/marcinooo/philips-air-purifier/blob/master/LICENSE.txt
+
