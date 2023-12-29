@@ -1,5 +1,5 @@
-from ._air_purifier import PhilipsAirPurifier
-from ._utils import ALLOWED_PARAMETERS_TO_SET
+from ._air_purifier import AirPurifier
+from ._utils import ALLOWED_PARAMETERS
 from . import errors
 
 
@@ -10,6 +10,6 @@ __version__ = "1.0.0"
 
 __all__ = [
     'PhilipsAirPurifier',
-    'ALLOWED_PARAMETERS_TO_SET',
+    'ALLOWED_PARAMETERS',
     'errors',
 ]
