@@ -2,6 +2,11 @@
 Philips Air Purifier Controller
 ===============================
 
+.. image:: https://dl.circleci.com/status-badge/img/gh/marcinooo/philips-air-purifier/tree/main.svg?style=svg
+    :target: https://dl.circleci.com/status-badge/redirect/gh/marcinooo/philips-air-purifier/tree/main
+
+|
+
 :Author: marcinooo
 :Tags: philips air purifier, python, client, api
 
@@ -78,7 +83,7 @@ List of all allowed parameters you can find in dictionary:
     pprint.pprint(ALLOWED_PARAMETERS)
 
 
-See __examples__ directory :grinning:.
+See *examples* directory :grinning:.
 
 .. note::
 
