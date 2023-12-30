@@ -1,4 +1,4 @@
-from philips_air_purifier import AirPurifier
+from philips_air_purifier_ac2889 import AirPurifier
 
 
 philips_air_purifier = AirPurifier(host='192.168.1.21').connect()

@@ -1,0 +1,40 @@
+[project]
+name = "philips-air-purifier-ac2889"
+dynamic = [ "version" ]
+authors = [
+    { name = "marcinooo" }
+]
+description = "A simple client to control the Philips AC2889 air purifier."
+readme = "README.rst"
+license = { file = "LICENSE.txt" }
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "requests",
+    "pycryptodome",
+    "pycryptodomex"
+]
+
+[project.optional-dependencies]
+test = [
+    "pylint",
+    "pytest",
+    "ddt"
+]
+
+[project.urls]
+Homepage = "https://github.com/marcinooo/philips-air-purifier"
+Issues = "https://github.com/marcinooo/philips-air-purifier/issues"
+
+[build-system]
+requires = [ "setuptools>=61.0" ]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = [ "src" ]
+
+[tool.setuptools.dynamic]
+version = { attr = "philips_air_purifier_ac2889.__version__" }
