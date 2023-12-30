@@ -4,24 +4,20 @@ orbs:
   python: circleci/python@1.5.0
 
 jobs:
-  build-and-test-py36:  &build-and-test-template
+  build-and-test-py37:  &build-and-test-template
     docker:
-      - image: cimg/python:3.6
+      - image: cimg/python:3.7
     steps:
       - checkout
       - run:
           name: Install package in test mode
-          command: python -m pip install ".[test]"
+          command: python -m pip install --upgrade pip && python -m pip install ".[test]"
       - run:
           name: Run pylint
           command: python -m pylint src
       - run:
           name: Run utests
           command: python -m pytest tests/utests
-  build-and-test-py37:
-    <<: *build-and-test-template
-    docker:
-      - image: cimg/python:3.7
   build-and-test-py38:
     <<: *build-and-test-template
     docker:
@@ -46,7 +42,6 @@ jobs:
 workflows:
   test:
     jobs:
-      - build-and-test-py36
       - build-and-test-py37
       - build-and-test-py38
       - build-and-test-py39

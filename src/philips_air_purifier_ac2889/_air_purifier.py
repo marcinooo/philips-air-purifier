@@ -164,4 +164,3 @@ class AirPurifier:
         data = json.loads(resp)
 
         return data
-            
