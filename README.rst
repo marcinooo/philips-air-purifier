@@ -28,7 +28,11 @@ Philips AC2889:
 Installation
 ============
 
-Install the package with pip:
+Install from PyPi:
+
+``pip install philips-air-purifier-ac2889``
+
+Install from github:
 
 ``$ pip install git+https://github.com/marcinooo/philips-air-purifier.git``
 
@@ -41,31 +45,40 @@ Simple example:
 
 .. code:: python
 
-    from philips_air_purifier import PhilipsAirPurifier
+    from philips_air_purifier_ac2889 import AirPurifier
 
 
-    HOST = '192.168.1.21'
+    philips_air_purifier = AirPurifier(host='192.168.1.21').connect()
 
-    philips_air_purifier = PhilipsAirPurifier(host=HOST).connect()
     data = philips_air_purifier.get()
-    print('Your air conditions:\n', data, '\n')
+    print(data)
 
-    print('Power on device...')
-    philips_air_purifier.set(pwr='1')
+    print('Power on...')
+    philips_air_purifier.set(pwr='1')  # power on
 
-    print('Increase device speed...')
-    philips_air_purifier.set(mode='M', om='2')
+    if isinstance(data['om'], int) and int(data['om']) <= 2:
+        new_speed = str(int(data['om']) + 1)
+        print(f'Increasing device speed from {data["om"]} to {new_speed}...')
+
+    else:
+        new_speed = '1'
+        print(f'Decreasing device speed from {data["om"]} to {new_speed}...')
+
+    philips_air_purifier.set(mode='M', om=new_speed)
+
 
 List of all allowed parameters you can find in dictionary: 
 
 .. code:: python
 
     import pprint
-    from philips_air_purifier import ALLOWED_PARAMETERS_TO_SET
+    from philips_air_purifier_ac2889 import ALLOWED_PARAMETERS
 
 
-    pprint.pprint(ALLOWED_PARAMETERS_TO_SET)
+    pprint.pprint(ALLOWED_PARAMETERS)
 
+
+See __examples__ directory :grinning:.
 
 .. note::
 
