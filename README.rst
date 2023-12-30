@@ -72,7 +72,7 @@ List of all allowed parameters you can find in dictionary:
 .. code:: python
 
     import pprint
-    from philips_air_purifier import ALLOWED_PARAMETERS
+    from philips_air_purifier_ac2889 import ALLOWED_PARAMETERS
 
 
     pprint.pprint(ALLOWED_PARAMETERS)
