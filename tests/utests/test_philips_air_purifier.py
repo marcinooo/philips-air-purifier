@@ -1,20 +1,21 @@
 import unittest
-import json
 from unittest.mock import patch, Mock
 from ddt import ddt, data, unpack
 
-from philips_air_purifier import PhilipsAirPurifier
-from philips_air_purifier._utils import filter_requested_data
-from philips_air_purifier.errors import ParameterValueError, ParameterNotRecognizedError
-from philips_air_purifier import ALLOWED_PARAMETERS_TO_SET
+from philips_air_purifier_ac2889 import AirPurifier
+from philips_air_purifier_ac2889._utils import filter_request_data
+from philips_air_purifier_ac2889.errors import ParameterValueError, ParameterNotRecognizedError
+from philips_air_purifier_ac2889 import ALLOWED_PARAMETERS
 
 
 @ddt
 class TestAirPurifier(unittest.TestCase):
     
     def setUp(self):
-        self.philips_air_purifier = PhilipsAirPurifier(host='192.168.1.21')
-        self.philips_air_purifier.connected = True
+
+        self.host = '192.168.1.21'
+        self.philips_air_purifier = AirPurifier(host=self.host, no_proxy=self.host)
+        self.philips_air_purifier.is_connected = True
         self.session_key = b'\x9a!\xeaOa\xbf3\xe9\x01\xa8\x1fS]\x0b\xd6\xad'
 
     @data(
@@ -32,12 +33,15 @@ class TestAirPurifier(unittest.TestCase):
     @patch('requests.put')
     def test_philips_air_purifier_connect_procedure(self, put_requests_data, bits, session_key, 
                                                     mock_put, mock_getrandbits):
-        self.philips_air_purifier.connected = False
+
+        self.philips_air_purifier.is_connected = False
         mock_put.return_value = self._mock_response(content=put_requests_data)
         mock_getrandbits.return_value = bits
+
         self.philips_air_purifier.connect()
+
         self.assertEqual(self.philips_air_purifier.session_key, session_key)
-        self.assertEqual(self.philips_air_purifier.connected, True)
+        self.assertEqual(self.philips_air_purifier.is_connected, True)
 
     @data(
         (
@@ -77,17 +81,38 @@ class TestAirPurifier(unittest.TestCase):
     @unpack
     @patch('requests.get')
     def test_get_data_from_air_purifier(self, parameters, recv_data, decoded_data, mock_get):
+
         mock_get.return_value = self._mock_response(content=recv_data)
         self.philips_air_purifier.session_key = self.session_key
+
         if isinstance(parameters, list):
             response_data = self.philips_air_purifier.get(*parameters)
         else:
             response_data = self.philips_air_purifier.get()
+
         self.assertEqual(response_data, decoded_data)
+
+    @patch('requests.get')
+    def test_get_network_information_from_air_purifier(self, mock_get):
+
+        expected_data = {"ssid": "FunBox3-6CF2", "password": "", "protection": "wpa-2", "ipaddress": "192.168.1.21",
+                         "netmask": "255.255.255.0", "gateway": "192.168.1.1", "dhcp": True,
+                         "macaddress": "e8:c1:d7:07:db:9a", "cppid": "e8c1d7fffe07db9a"}
+        recv_data = (b'lmYgxCIZ+6h4OXIVNk52WhssTEyvJEDShDjigBiQVJbHbmgmD4y7l38bImHhERNVrScGZ4svQkHE9rKPWfcgGr86CRH5Dzj'
+                     b'Rivvrc3nDn3uAGYdiCrgszAh7W/FrSBw/cBPHOmwKAkvmsHZ4ETMywmjDcdbo6XTVmdvPentyYdYZdQ1PVHSaseNrkSkuof'
+                     b'66gaDVh70fWnG0vL0WGgC1PmMgXx8mDSbeW0Toj2ZwKsg/ccdBIRcaS1dzwltkayb72O7pKRTRgWscrAKH5H+/nIxj81AkH'
+                     b'GM46NV9b/vaoHqPw+/xJxR7XKmGmt0ehFus')
+
+        mock_get.return_value = self._mock_response(content=recv_data)
+        self.philips_air_purifier.session_key = self.session_key
+
+        response_data = self.philips_air_purifier.network()
+
+        self.assertDictEqual(response_data, expected_data)
 
     @data(
         (
-            {'pwr':'1'}, 
+            {'pwr': '1'},
             b'dEbVcp5KebREQVf0CdRmiYOjNPrwov3jv/V5YUWrgUB0HGu4X+2RzYF0bphte2bxgy2LUHSrkmXFrFqRiHbnkH'
             b'FPbmOb+Wh1Bys440qmtaHxyiNZPuhR6hhzBayck2scWsHB8pKu+beszJix5IWOhcjJJXjZQIg75+9o/+i2X9U=',
             {'om': '1', 'pwr': '1', 'cl': False, 'aqil': 50, 'uil': '1', 'dt': 0, 'dtrs': 0, 
@@ -104,18 +129,23 @@ class TestAirPurifier(unittest.TestCase):
     @unpack
     @patch('requests.put')
     def test_set_parameters_in_air_purifier(self, parameters, recv_data, decoded_data, mock_put):
+
         mock_put.return_value = self._mock_response(content=recv_data)
         self.philips_air_purifier.session_key = self.session_key
+
         response_data = self.philips_air_purifier.set(**parameters)
+
         self.assertEqual(response_data, decoded_data)
 
     def tearDown(self):
         pass
 
-    def _mock_response(self, status=200, content={}):
+    def _mock_response(self, status=200, content=None):
+
         mock_resp = Mock()
         mock_resp.status_code = status
-        mock_resp.content = content
+        mock_resp.content = content if content is not None else {}
+
         return mock_resp
 
 
@@ -131,11 +161,11 @@ class TestFilterRequestedData(unittest.TestCase):
         {'': None},
         {1: None},
     )
-    def test_invalid_parameters_names(self, name):
-        error_message = "Unrecoginized '{}' parameter. Allowed parameters: pwr, om, aqil, uil, ddp, mode".format(
-            list(name.keys())[0]
-        )
-        self.assertRaisesRegex(ParameterNotRecognizedError, error_message, filter_requested_data, name)
+    def test_invalid_parameters_names(self, parameter):
+
+        error_message = (f'Unknown parameter "{list(parameter.keys())[0]}". '
+                         f'Allowed parameters: {", ".join(ALLOWED_PARAMETERS.keys())}')
+        self.assertRaisesRegex(ParameterNotRecognizedError, error_message, filter_request_data, parameter)
 
     @data(
         {'pwr': '0'},
@@ -156,7 +186,7 @@ class TestFilterRequestedData(unittest.TestCase):
         {'mode': 'B'},
     )
     def test_valid_parameters_values(self, parameters):
-        filtered_parameters = filter_requested_data(parameters)
+        filtered_parameters = filter_request_data(parameters)
         self.assertEqual(filtered_parameters, parameters)
 
     @data(
@@ -165,10 +195,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'pwr': 1},
     )
     def test_invalid_pwr_parameter_values(self, parameters):
-        error_message = "Value '{}' is not allowed.\n{}".format(
-            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['pwr']['help']
-        )
-        self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
+
+        error_message = f'Value "{list(parameters.values())[0]}" is not allowed. {ALLOWED_PARAMETERS["pwr"]["help"]}'
+        self.assertRaisesRegex(ParameterValueError, error_message, filter_request_data, parameters)
 
     @data(
         {'om': '-1'},
@@ -176,10 +205,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'om': 1},
     )
     def test_invalid_om_parameter_values(self, parameters):
-        error_message = "Value '{}' is not allowed.\n{}".format(
-            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['om']['help']
-        )
-        self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
+
+        error_message = f'Value "{list(parameters.values())[0]}" is not allowed. {ALLOWED_PARAMETERS["om"]["help"]}'
+        self.assertRaisesRegex(ParameterValueError, error_message, filter_request_data, parameters)
 
     @data(
         {'aqil': 0},
@@ -188,10 +216,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'aqil': 120},
     )
     def test_invalid_aqil_parameter_values(self, parameters):
-        error_message = "Value '{}' is not allowed.\n{}".format(
-            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['aqil']['help']
-        )
-        self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
+
+        error_message = f'Value "{list(parameters.values())[0]}" is not allowed. {ALLOWED_PARAMETERS["aqil"]["help"]}'
+        self.assertRaisesRegex(ParameterValueError, error_message, filter_request_data, parameters)
 
     @data(
         {'uil': 0},
@@ -199,10 +226,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'uil': 'D'},
     )
     def test_invalid_uil_parameter_values(self, parameters):
-        error_message = "Value '{}' is not allowed.\n{}".format(
-            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['uil']['help']
-        )
-        self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
+
+        error_message = f'Value "{list(parameters.values())[0]}" is not allowed. {ALLOWED_PARAMETERS["uil"]["help"]}'
+        self.assertRaisesRegex(ParameterValueError, error_message, filter_request_data, parameters)
     
     @data(
         {'ddp': 0},
@@ -210,10 +236,9 @@ class TestFilterRequestedData(unittest.TestCase):
         {'ddp': '3'},
     )
     def test_invalid_ddp_parameter_values(self, parameters):
-        error_message = "Value '{}' is not allowed.\n{}".format(
-            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['ddp']['help']
-        )
-        self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
+
+        error_message = f'Value "{list(parameters.values())[0]}" is not allowed. {ALLOWED_PARAMETERS["ddp"]["help"]}'
+        self.assertRaisesRegex(ParameterValueError, error_message, filter_request_data, parameters)
 
     @data(
         {'mode': 'C'},
@@ -222,7 +247,6 @@ class TestFilterRequestedData(unittest.TestCase):
         {'mode': -1},
     )
     def test_invalid_aqil_parameter_values(self, parameters):
-        error_message = "Value '{}' is not allowed.\n{}".format(
-            list(parameters.values())[0], ALLOWED_PARAMETERS_TO_SET['mode']['help']
-        )
-        self.assertRaisesRegex(ParameterValueError, error_message, filter_requested_data, parameters)
+
+        error_message = f'Value "{list(parameters.values())[0]}" is not allowed. {ALLOWED_PARAMETERS["mode"]["help"]}'
+        self.assertRaisesRegex(ParameterValueError, error_message, filter_request_data, parameters)

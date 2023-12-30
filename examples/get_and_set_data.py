@@ -1,21 +1,20 @@
-from philips_air_purifier import PhilipsAirPurifier
+from philips_air_purifier_ac2889 import AirPurifier
 
 
-HOST = '192.168.1.21'
+philips_air_purifier = AirPurifier(host='192.168.1.21').connect()
 
-philips_air_purifier = PhilipsAirPurifier().connect()
 data = philips_air_purifier.get()
-print('Your air conditions:\n', data, '\n')
+print(data)
 
-print('Power on device...')
-philips_air_purifier.set(pwr='1')
-
-print('Setting speed...')
+print('Power on...')
+philips_air_purifier.set(pwr='1')  # power on
 
 if isinstance(data['om'], int) and int(data['om']) <= 2:
     new_speed = str(int(data['om']) + 1)
-    print('Increasing device speed from {} to {}...'.format(data['om'], new_speed))
-    philips_air_purifier.set(mode='M', om=new_speed)
+    print(f'Increasing device speed from {data["om"]} to {new_speed}...')
+
 else:
-    print('Decreasing device speed from {} to 1...'.format(data['om']))
-    philips_air_purifier.set(mode='M', om='1')
+    new_speed = '1'
+    print(f'Decreasing device speed from {data["om"]} to {new_speed}...')
+
+philips_air_purifier.set(mode='M', om=new_speed)
